@@ -271,6 +271,90 @@
       });
     }
 
+    function renderPRs() {
+      const prByCategory = {};
+      for (const race of races) {
+        const cat = race.category;
+        if (cat === 'other') continue;
+        if (!prByCategory[cat] || race.durationSeconds < prByCategory[cat].durationSeconds) {
+          prByCategory[cat] = race;
+        }
+      }
+
+      const cats = CATEGORY_ORDER.filter((c) => prByCategory[c]);
+      if (cats.length === 0) {
+        document.getElementById('pr-grid').innerHTML = '<p style="color:var(--muted);font-size:14px">no races yet</p>';
+        return;
+      }
+
+      document.getElementById('pr-grid').innerHTML = cats.map((cat) => {
+        const pr = prByCategory[cat];
+        return `
+          <div class="pr-card">
+            <div class="label">${CATEGORY_LABELS[cat]}</div>
+            <div class="time" style="color:${CATEGORY_COLORS[cat]}">${formatTime(pr.durationSeconds)}</div>
+            <div class="meta">${pr.name}<br>${pr.date}</div>
+          </div>`;
+      }).join('');
+    }
+
+    let sortKey = 'date';
+    let sortDir = -1;
+
+    function renderTable() {
+      const prTimes = {};
+      for (const r of races) {
+        if (!prTimes[r.category] || r.durationSeconds < prTimes[r.category]) {
+          prTimes[r.category] = r.durationSeconds;
+        }
+      }
+
+      const sorted = [...races].sort((a, b) => {
+        const av = a[sortKey], bv = b[sortKey];
+        return typeof av === 'string'
+          ? sortDir * av.localeCompare(bv)
+          : sortDir * (av - bv);
+      });
+
+      const cols = [
+        { key: 'date',            label: 'Date' },
+        { key: 'name',            label: 'Race' },
+        { key: 'category',        label: 'Distance' },
+        { key: 'durationSeconds', label: 'Time' },
+        { key: 'pacePerKm',       label: 'Pace' },
+      ];
+
+      const head = cols.map(({ key, label }) => {
+        const arrow = key === sortKey ? (sortDir === -1 ? ' ↓' : ' ↑') : '';
+        return `<th data-key="${key}">${label}${arrow}</th>`;
+      }).join('');
+
+      const body = sorted.map((r) => {
+        const isPR = prTimes[r.category] === r.durationSeconds && r.category !== 'other';
+        return `<tr>
+          <td class="mono">${r.date}</td>
+          <td><a href="https://www.strava.com/activities/${r.stravaId}" target="_blank" rel="noopener">${r.name}${isPR ? '<span class="pr-badge">pr</span>' : ''}</a></td>
+          <td>${CATEGORY_LABELS[r.category] || r.category}</td>
+          <td class="mono">${formatTime(r.durationSeconds)}</td>
+          <td class="mono">${r.pacePerKm}/km</td>
+        </tr>`;
+      }).join('');
+
+      document.getElementById('table-container').innerHTML = `
+        <table>
+          <thead><tr>${head}</tr></thead>
+          <tbody>${body}</tbody>
+        </table>`;
+
+      document.querySelectorAll('thead th').forEach((th) => {
+        th.addEventListener('click', () => {
+          const key = th.dataset.key;
+          sortKey === key ? (sortDir *= -1) : (sortKey = key, sortDir = -1);
+          renderTable();
+        });
+      });
+    }
+
     async function loadData() {
       try {
         const res = await fetch('races.json');
@@ -292,8 +376,8 @@
       document.getElementById('subtitle').textContent = first === last ? first : `${first} – ${last}`;
 
       renderChart();
-      // renderPRs()   — added in Task 7
-      // renderTable() — added in Task 7
+      renderPRs();
+      renderTable();
     }
 
     loadData();
