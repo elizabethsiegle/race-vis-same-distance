@@ -175,6 +175,102 @@
   <script>
     let races = [];
 
+    const CATEGORY_COLORS = {
+      '5k':       'var(--accent-5k)',
+      '10k':      'var(--accent-10k)',
+      'half':     'var(--accent-half)',
+      'marathon': 'var(--accent-marathon)',
+    };
+
+    const CATEGORY_LABELS = {
+      '5k': '5k', '10k': '10k', 'half': 'Half Marathon', 'marathon': 'Marathon',
+    };
+
+    const CATEGORY_ORDER = ['5k', '10k', 'half', 'marathon'];
+
+    function formatTime(totalSeconds) {
+      const s = Math.round(totalSeconds);
+      const h = Math.floor(s / 3600);
+      const m = Math.floor((s % 3600) / 60);
+      const sec = s % 60;
+      if (h > 0) return `${h}:${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+      return `${m}:${String(sec).padStart(2, '0')}`;
+    }
+
+    function renderChart() {
+      const categories = [...new Set(races.map((r) => r.category))]
+        .filter((c) => c !== 'other')
+        .sort((a, b) => CATEGORY_ORDER.indexOf(a) - CATEGORY_ORDER.indexOf(b));
+
+      const allDates = [...new Set(races.map((r) => r.date))].sort();
+
+      const datasets = categories.map((cat) => {
+        const catRaces = races.filter((r) => r.category === cat).sort((a, b) => a.date.localeCompare(b.date));
+        return {
+          label: CATEGORY_LABELS[cat] || cat,
+          data: catRaces.map((r) => ({ x: r.date, y: r.durationSeconds, race: r })),
+          borderColor: CATEGORY_COLORS[cat] || '#888',
+          backgroundColor: CATEGORY_COLORS[cat] || '#888',
+          tension: 0.3,
+          pointRadius: 5,
+          pointHoverRadius: 8,
+        };
+      });
+
+      new Chart(document.getElementById('chart'), {
+        type: 'line',
+        data: { datasets },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'point' },
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: { color: '#555', font: { size: 11 }, boxWidth: 10, padding: 20 },
+            },
+            tooltip: {
+              backgroundColor: '#161616',
+              borderColor: '#2a2a2a',
+              borderWidth: 1,
+              titleColor: '#d4d4d4',
+              bodyColor: '#777',
+              padding: 14,
+              callbacks: {
+                title: (items) => items[0].raw.race.name,
+                label: (item) => {
+                  const r = item.raw.race;
+                  return [`  ${r.date}`, `  ${formatTime(r.durationSeconds)}  ·  ${r.pacePerKm}/km`];
+                },
+              },
+            },
+          },
+          scales: {
+            x: {
+              type: 'category',
+              labels: allDates,
+              grid: { color: '#161616' },
+              ticks: {
+                color: '#444',
+                font: { size: 11 },
+                maxRotation: 0,
+                callback: (_val, idx) => allDates[idx] ? allDates[idx].slice(0, 7) : '',
+              },
+            },
+            y: {
+              reverse: true,
+              grid: { color: '#161616' },
+              ticks: {
+                color: '#444',
+                font: { family: "'SF Mono','Fira Code',monospace", size: 11 },
+                callback: (val) => formatTime(val),
+              },
+            },
+          },
+        },
+      });
+    }
+
     async function loadData() {
       try {
         const res = await fetch('races.json');
@@ -195,7 +291,7 @@
       const first = years[0], last = years[years.length - 1];
       document.getElementById('subtitle').textContent = first === last ? first : `${first} – ${last}`;
 
-      // renderChart() — added in Task 6
+      renderChart();
       // renderPRs()   — added in Task 7
       // renderTable() — added in Task 7
     }
