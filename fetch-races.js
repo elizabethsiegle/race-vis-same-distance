@@ -47,3 +47,138 @@ function formatPace(distanceMeters, durationSeconds) {
 }
 
 module.exports = { getCategory, isRace, formatTime, formatPace };
+
+// ─── API client (only runs when executed directly) ────────────────────────────
+
+function loadEnv() {
+  const text = fs.readFileSync('.env', 'utf8');
+  const env = {};
+  for (const line of text.split('\n')) {
+    const eq = line.indexOf('=');
+    if (eq > 0) env[line.slice(0, eq).trim()] = line.slice(eq + 1).trim();
+  }
+  return env;
+}
+
+function httpsPost(hostname, path, body) {
+  return new Promise((resolve, reject) => {
+    const data = new URLSearchParams(body).toString();
+    const req = https.request(
+      {
+        hostname,
+        path,
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Content-Length': Buffer.byteLength(data),
+        },
+      },
+      (res) => {
+        let raw = '';
+        res.on('data', (c) => (raw += c));
+        res.on('end', () => resolve(JSON.parse(raw)));
+      }
+    );
+    req.on('error', reject);
+    req.write(data);
+    req.end();
+  });
+}
+
+function httpsGet(path, token) {
+  return new Promise((resolve, reject) => {
+    const req = https.request(
+      {
+        hostname: 'www.strava.com',
+        path,
+        headers: { Authorization: `Bearer ${token}` },
+      },
+      (res) => {
+        let raw = '';
+        res.on('data', (c) => (raw += c));
+        res.on('end', () => resolve(JSON.parse(raw)));
+      }
+    );
+    req.on('error', reject);
+    req.end();
+  });
+}
+
+async function refreshAccessToken(env) {
+  const result = await httpsPost('www.strava.com', '/oauth/token', {
+    client_id: env.STRAVA_CLIENT_ID,
+    client_secret: env.STRAVA_CLIENT_SECRET,
+    refresh_token: env.STRAVA_REFRESH_TOKEN,
+    grant_type: 'refresh_token',
+  });
+  if (!result.access_token) throw new Error(`Token refresh failed: ${JSON.stringify(result)}`);
+  return result.access_token;
+}
+
+async function fetchAllActivities(token) {
+  const activities = [];
+  let page = 1;
+  while (true) {
+    const batch = await httpsGet(
+      `/api/v3/athlete/activities?type=Run&per_page=200&page=${page}`,
+      token
+    );
+    if (!Array.isArray(batch) || batch.length === 0) break;
+    activities.push(...batch);
+    if (batch.length < 200) break;
+    page++;
+  }
+  return activities;
+}
+
+function toRace(activity) {
+  return {
+    name: activity.name,
+    date: activity.start_date_local.slice(0, 10),
+    category: getCategory(activity.distance) || 'other',
+    distanceKm: Math.round(activity.distance / 10) / 100,
+    durationSeconds: Math.round(activity.moving_time),
+    pacePerKm: formatPace(activity.distance, activity.moving_time),
+    stravaId: activity.id,
+  };
+}
+
+async function main() {
+  let env;
+  try {
+    env = loadEnv();
+  } catch {
+    console.error('Could not read .env');
+    process.exit(1);
+  }
+
+  const missing = ['STRAVA_CLIENT_ID', 'STRAVA_CLIENT_SECRET', 'STRAVA_REFRESH_TOKEN']
+    .filter((k) => !env[k]);
+  if (missing.length) {
+    console.error(`Missing from .env: ${missing.join(', ')}`);
+    process.exit(1);
+  }
+
+  let token;
+  try {
+    token = await refreshAccessToken(env);
+  } catch (err) {
+    console.error('Token refresh failed:', err.message);
+    process.exit(1);
+  }
+
+  console.log('Fetching activities...');
+  const activities = await fetchAllActivities(token);
+  console.log(`Fetched ${activities.length} activities`);
+
+  const races = activities.filter(isRace).map(toRace);
+  races.sort((a, b) => a.date.localeCompare(b.date));
+  console.log(`Found ${races.length} races`);
+
+  fs.writeFileSync('races.json', JSON.stringify(races, null, 2));
+  console.log('Wrote races.json');
+}
+
+if (require.main === module) {
+  main().catch((err) => { console.error(err); process.exit(1); });
+}
