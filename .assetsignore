@@ -1,0 +1,10 @@
+.env
+.git
+node_modules
+fetch-races.js
+strava-auth.js
+test-filter.js
+wrangler.toml
+.assetsignore
+.gitignore
+docs
