@@ -1,1 +1,128 @@
-[]
+[
+  {
+    "name": "Chinatown 10k 2019",
+    "date": "2019-03-03",
+    "category": "10k",
+    "distanceKm": 10.41,
+    "durationSeconds": 3957,
+    "pacePerKm": "6:20",
+    "stravaId": 2189043054
+  },
+  {
+    "name": "Pick up sf half bib ",
+    "date": "2019-07-27",
+    "category": "other",
+    "distanceKm": 2.02,
+    "durationSeconds": 704,
+    "pacePerKm": "5:49",
+    "stravaId": 2568431948
+  },
+  {
+    "name": "Sf first half marathon ",
+    "date": "2019-07-28",
+    "category": "half",
+    "distanceKm": 21.51,
+    "durationSeconds": 8998,
+    "pacePerKm": "6:58",
+    "stravaId": 2570684909
+  },
+  {
+    "name": "Chinatown LNY 10K",
+    "date": "2022-03-06",
+    "category": "10k",
+    "distanceKm": 10.61,
+    "durationSeconds": 3426,
+    "pacePerKm": "5:23",
+    "stravaId": 6783535125
+  },
+  {
+    "name": "Monterey half marathon hi Kimee!!",
+    "date": "2022-11-13",
+    "category": "half",
+    "distanceKm": 21.14,
+    "durationSeconds": 7645,
+    "pacePerKm": "6:02",
+    "stravaId": 8113561298
+  },
+  {
+    "name": "Chinatown LNY 10k",
+    "date": "2023-03-05",
+    "category": "10k",
+    "distanceKm": 10.26,
+    "durationSeconds": 3457,
+    "pacePerKm": "5:37",
+    "stravaId": 8665778067
+  },
+  {
+    "name": "Run to Sf race expo with Shubha! ",
+    "date": "2023-07-22",
+    "category": "other",
+    "distanceKm": 3.44,
+    "durationSeconds": 1271,
+    "pacePerKm": "6:09",
+    "stravaId": 9502373074
+  },
+  {
+    "name": "Alexi Pappas Sf 10k race shubhaaa",
+    "date": "2023-07-23",
+    "category": "10k",
+    "distanceKm": 9.84,
+    "durationSeconds": 3170,
+    "pacePerKm": "5:22",
+    "stravaId": 9507256412
+  },
+  {
+    "name": "1 week to race day run!",
+    "date": "2023-12-03",
+    "category": "other",
+    "distanceKm": 12.23,
+    "durationSeconds": 4989,
+    "pacePerKm": "6:48",
+    "stravaId": 10324232351
+  },
+  {
+    "name": "Honolulu Marathon🏝️",
+    "date": "2023-12-10",
+    "category": "marathon",
+    "distanceKm": 42.66,
+    "durationSeconds": 16959,
+    "pacePerKm": "6:38",
+    "stravaId": 10360482902
+  },
+  {
+    "name": "Team bam runs Oakland half!",
+    "date": "2025-03-23",
+    "category": "half",
+    "distanceKm": 21.52,
+    "durationSeconds": 7503,
+    "pacePerKm": "5:49",
+    "stravaId": 13965996808
+  },
+  {
+    "name": "Last long run pre-Santa Barbara wine county half",
+    "date": "2025-05-03",
+    "category": "other",
+    "distanceKm": 13.7,
+    "durationSeconds": 5389,
+    "pacePerKm": "6:33",
+    "stravaId": 14369973068
+  },
+  {
+    "name": "Santa Barbara wine country half",
+    "date": "2025-05-10",
+    "category": "half",
+    "distanceKm": 21.2,
+    "durationSeconds": 7615,
+    "pacePerKm": "5:59",
+    "stravaId": 14437599812
+  },
+  {
+    "name": "Banff half",
+    "date": "2026-06-14",
+    "category": "half",
+    "distanceKm": 21.12,
+    "durationSeconds": 7677,
+    "pacePerKm": "6:04",
+    "stravaId": 18920502823
+  }
+]

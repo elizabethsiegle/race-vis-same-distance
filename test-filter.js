@@ -20,10 +20,10 @@ assert.strictEqual(isRace({ name: 'City 10k Race',         distance: 8000 }), tr
 assert.strictEqual(isRace({ name: 'HM 2025',               distance: 8000 }), true,  'keyword: hm');
 assert.strictEqual(isRace({ name: 'Sunday morning run',    distance: 8000 }), false, 'no keyword, no distance match');
 
-// isRace — distance match (no keyword needed)
-assert.strictEqual(isRace({ name: 'Evening jog', distance: 5000  }), true,  'distance: 5k');
-assert.strictEqual(isRace({ name: 'Long run',    distance: 21097 }), true,  'distance: half');
-assert.strictEqual(isRace({ name: 'Easy run',    distance: 7000  }), false, 'distance: not a race dist');
+// isRace — keyword-only (distance alone is not sufficient)
+assert.strictEqual(isRace({ name: 'Evening jog', distance: 5000  }), false, 'no keyword = not a race');
+assert.strictEqual(isRace({ name: 'Long run',    distance: 21097 }), false, 'no keyword = not a race');
+assert.strictEqual(isRace({ name: 'Easy run',    distance: 7000  }), false, 'no keyword = not a race');
 
 // formatTime
 assert.strictEqual(formatTime(3600), '1:00:00', '1 hour');

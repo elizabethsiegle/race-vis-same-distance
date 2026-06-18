@@ -25,8 +25,10 @@ function getCategory(distanceMeters) {
 
 function isRace(activity) {
   const name = (activity.name || '').toLowerCase();
-  const hasKeyword = RACE_KEYWORDS.some((kw) => name.includes(kw));
-  return hasKeyword || getCategory(activity.distance) !== null;
+  // Word-boundary matching prevents 'hm' from matching 'richmond', etc.
+  return RACE_KEYWORDS.some((kw) =>
+    new RegExp(`\\b${kw.replace(/\s+/, '\\s+')}\\b`).test(name)
+  );
 }
 
 function formatTime(totalSeconds) {
@@ -120,11 +122,13 @@ async function fetchAllActivities(token) {
   let page = 1;
   while (true) {
     const batch = await httpsGet(
-      `/api/v3/athlete/activities?type=Run&per_page=200&page=${page}`,
+      `/api/v3/athlete/activities?per_page=200&page=${page}`,
       token
     );
     if (!Array.isArray(batch) || batch.length === 0) break;
-    activities.push(...batch);
+    // Strava deprecated ?type=Run query param — filter client-side
+    const runs = batch.filter((a) => a.sport_type === 'Run' || a.type === 'Run');
+    activities.push(...runs);
     if (batch.length < 200) break;
     page++;
   }
